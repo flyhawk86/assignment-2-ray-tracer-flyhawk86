@@ -15,7 +15,7 @@ public:
 	// intersection function: returns the closest intersection point with the given ray (or a negative value, if none exists)
 	// output parameters: location of the intersection, object normal
 	// PURE VIRTUAL FUNCTION: has to be implemented in all child classes.
-	virtual float intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDir, glm::vec3& intersectPos = glm::vec3(0), glm::vec3& normal = glm::vec3(0)) = 0;
+	virtual float intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDir, glm::vec3& intersectPos, glm::vec3& normal) = 0;
 
 	const glm::vec3& Color() { return color; };
 	float AmbientFactor() { return ambient; };

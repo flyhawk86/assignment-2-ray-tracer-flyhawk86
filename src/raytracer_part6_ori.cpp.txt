@@ -111,7 +111,7 @@ bool isIntersected(std::vector<Object*> objs, Object* obj,
 
 
 glm::vec3 reflect(std::vector<Object*>& objs, Object* obj, glm::vec3& intersectPos, glm::vec3& normal, Ray& ray,
-                  glm::vec3& light, int level){
+                       glm::vec3& light, int level){
     if(level == 0){
         // return the color of the last object
         return glm::vec3(300.0f, 300.0f, 300.0f); // invalid vector
@@ -196,149 +196,28 @@ int main() {
     std::vector<Ray> ray;
     ray.resize(dimx * dimy);
 
+
+
     int k = 0;
     for (int j = dimy-1; j >= 0; --j) {
         for (int i = 0; i < dimx; ++i) {
-            glm::vec3 direction = glm::normalize(lower_left_corner + float(i)/float(dimx-1)*horizontal
-                                                 + float(j)/float(dimy-1)*vertical - e);
+            glm::vec3 direction = glm::normalize(lower_left_corner + float(i)/float(dimx)*horizontal
+                                            + float(j)/float(dimy)*vertical - e);
 
-//            image[k] = direction*255.0f; // code for non-clamped images
+//            image[k++] = direction*255.0f;
 
-            glm::vec3 directionClamped = glm::clamp(direction, 0.0f, 1.0f);
-            image[k] = directionClamped*255.0f; // clamped
+//            glm::vec3 directionClamped = glm::clamp(direction, 0.0f, 1.0f);
+//            image[k++] = directionClamped*255.0f;
 
-            ray[k] = Ray(e, direction);
-
-            k++;
+            ray[k++] = Ray(e, direction);
         }
     }
-
-    // write part1 clamped image
-    writeP6PPM((unsigned int)dimx, (unsigned int)dimy, image, "part1_clamped");
-
-
-    glm::vec3 light = e - u*1.9f + v*1.9f;
 
     std::vector<Object*> objs;
     objs.push_back(new Sphere(glm::vec3(1.0, 0.5, 0.0), 0.75, glm::vec3(0.0, 0.0, -5.0), true));
     objs.push_back(new Sphere(glm::vec3(0.0, 1.0, 0.5), 0.5, glm::vec3(1.0, 0.0, -5.5), false));
     objs.push_back(new Sphere(glm::vec3(0.0, 0.5, 1.0), 0.2, glm::vec3(-1.0, 0.5, -3.0), false));
     objs.push_back(new Sphere(glm::vec3(1.0, 0.5, 0.5), 0.2, glm::vec3(-0.5, -0.5, -2.5), false));
-
-    // part 2 spheres
-    k= 0;
-    for (int j = dimy-1; j >= 0; --j) {
-        for (int i = 0; i < dimx; ++i) {
-            float minDistance = FLT_MAX;
-            bool setFlag = false;
-            Object* closeObj = nullptr;
-
-            glm::vec3 intersectPos;
-            glm::vec3 normal;
-            glm::vec3 closeIntersectPos;
-            glm::vec3 closeNormal;
-
-            for(Object* obj : objs){
-                float dist_ = obj->intersect(ray[k].origin(), ray[k].direction(), intersectPos, normal);
-
-                if(dist_ != -1.0f){
-                    if(!setFlag || minDistance > dist_){
-                        setFlag = true;
-                        minDistance = dist_;
-                        closeObj = obj;
-                        closeIntersectPos = intersectPos;
-                        closeNormal = normal;
-                    }
-                }
-            }
-            if(setFlag){
-                image[k] = closeObj->Color()*255.0f;
-            }else{
-                image[k] = glm::vec3(0.5, 0.0, 1.0)*255.0f;
-            }
-            k++;
-        }
-    }
-    // write part2 spheres
-    writeP6PPM((unsigned int)dimx, (unsigned int)dimy, image, "part2_spheres");
-
-    // part 3 shading
-    k= 0;
-    for (int j = dimy-1; j >= 0; --j) {
-        for (int i = 0; i < dimx; ++i) {
-            float minDistance = FLT_MAX;
-            bool setFlag = false;
-            Object* closeObj = nullptr;
-
-            glm::vec3 intersectPos;
-            glm::vec3 normal;
-            glm::vec3 closeIntersectPos;
-            glm::vec3 closeNormal;
-
-            for(Object* obj : objs){
-                float dist_ = obj->intersect(ray[k].origin(), ray[k].direction(), intersectPos, normal);
-
-                if(dist_ != -1.0f){
-                    if(!setFlag || minDistance > dist_){
-                        setFlag = true;
-                        minDistance = dist_;
-                        closeObj = obj;
-                        closeIntersectPos = intersectPos;
-                        closeNormal = normal;
-                    }
-                }
-            }
-            if(setFlag){
-                image[k] = phongShading(closeObj, closeIntersectPos, closeNormal, ray[k], light, closeObj->Color()*255.0f, closeObj->Color()*255.0f);
-            }else{
-                image[k] = glm::vec3(0.5, 0.0, 1.0)*255.0f;
-            }
-            k++;
-        }
-    }
-    // write part3 shading
-    writeP6PPM((unsigned int)dimx, (unsigned int)dimy, image, "part3_shading");
-
-    // part 4 shadows
-    k= 0;
-    for (int j = dimy-1; j >= 0; --j) {
-        for (int i = 0; i < dimx; ++i) {
-            float minDistance = FLT_MAX;
-            bool setFlag = false;
-            Object* closeObj = nullptr;
-
-            glm::vec3 intersectPos;
-            glm::vec3 normal;
-            glm::vec3 closeIntersectPos;
-            glm::vec3 closeNormal;
-
-            for(Object* obj : objs){
-                float dist_ = obj->intersect(ray[k].origin(), ray[k].direction(), intersectPos, normal);
-
-                if(dist_ != -1.0f){
-                    if(!setFlag || minDistance > dist_){
-                        setFlag = true;
-                        minDistance = dist_;
-                        closeObj = obj;
-                        closeIntersectPos = intersectPos;
-                        closeNormal = normal;
-                    }
-                }
-            }
-            if(setFlag){
-                if(isIntersected(objs, closeObj, closeIntersectPos, light)){
-                    image[k] = phongShadows(closeObj, closeObj->Color()*255.0f);
-                }else{
-                    image[k] = phongShading(closeObj, closeIntersectPos, closeNormal, ray[k], light, closeObj->Color()*255.0f, closeObj->Color()*255.0f);
-                }
-            }else{
-                image[k] = glm::vec3(0.5, 0.0, 1.0)*255.0f;
-            }
-            k++;
-        }
-    }
-    // write part4 shadows
-    writeP6PPM((unsigned int)dimx, (unsigned int)dimy, image, "part4_shadows");
 
     objs.push_back(new Plane(glm::vec3(0.75, 0.75, 0.75), glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, -1.0, 0.0), true));
     objs.push_back(new Plane(glm::vec3(0.75, 0.75, 0.75), glm::vec3(-1.0, 0.0, 0.0), glm::vec3(2.0, 0.0, 0.0), false));
@@ -347,48 +226,7 @@ int main() {
     objs.push_back(new Plane(glm::vec3(0.75, 0.75, 0.75), glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 2.5, 0.0), false));
     objs.push_back(new Plane(glm::vec3(0.75, 0.75, 0.75), glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, 0.0, 2.0), false));
 
-    // part 5 planes
-    k= 0;
-    for (int j = dimy-1; j >= 0; --j) {
-        for (int i = 0; i < dimx; ++i) {
-            float minDistance = FLT_MAX;
-            bool setFlag = false;
-            Object* closeObj = nullptr;
-
-            glm::vec3 intersectPos;
-            glm::vec3 normal;
-            glm::vec3 closeIntersectPos;
-            glm::vec3 closeNormal;
-
-            for(Object* obj : objs){
-                float dist_ = obj->intersect(ray[k].origin(), ray[k].direction(), intersectPos, normal);
-
-                if(dist_ != -1.0f){
-                    if(!setFlag || minDistance > dist_){
-                        setFlag = true;
-                        minDistance = dist_;
-                        closeObj = obj;
-                        closeIntersectPos = intersectPos;
-                        closeNormal = normal;
-                    }
-                }
-            }
-            if(setFlag){
-                if(isIntersected(objs, closeObj, closeIntersectPos, light)){
-                    image[k] = phongShadows(closeObj, closeObj->Color()*255.0f);
-                }else{
-                    image[k] = phongShading(closeObj, closeIntersectPos, closeNormal, ray[k], light, closeObj->Color()*255.0f, closeObj->Color()*255.0f);
-                }
-            }else{
-                image[k] = glm::vec3(0.5, 0.0, 1.0)*255.0f;
-            }
-            k++;
-        }
-    }
-    // write part 5 planes
-    writeP6PPM((unsigned int)dimx, (unsigned int)dimy, image, "part5_planes");
-
-    // part 6 reflections
+    glm::vec3 light = e - u*1.9f + v*1.9f;
     k = 0;
     for (int j = dimy-1; j >= 0; --j) {
         for (int i = 0; i < dimx; ++i) {
@@ -448,5 +286,5 @@ int main() {
     std::cout << "Total execution time in milliseconds: " << duration.count() << std::endl;
 
     // write image data to PPM file
-    return writeP6PPM((unsigned int)dimx, (unsigned int)dimy, image, "part6_reflections");
+	return writeP6PPM((unsigned int)dimx, (unsigned int)dimy, image);
 }
